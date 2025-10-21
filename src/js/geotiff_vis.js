@@ -26,40 +26,52 @@ function debugPanesAndCanvases(tag = '') {
 }
 
 // --- Load and render GeoTIFF ---
+
 async function loadGeoTIFFGuarded(url, loadId) {
   try {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
     const arrayBuffer = await resp.arrayBuffer();
-    if (loadId !== currentLoadId) return; // if another request started, stop this one
 
-    removeOldGeoRasterLayers(); // ✅ remove old canvases and layers before adding the new one
+    // stop if another load started
+    if (loadId !== currentLoadId) return;
+
+    removeOldGeoRasterLayers();
 
     const georaster = await parseGeoraster(arrayBuffer);
     if (loadId !== currentLoadId) return;
 
     currentRaster = georaster;
 
+    const thisLoadId = loadId; // snapshot of load ID
+
     currentLayer = new GeoRasterLayer({
       georaster,
       opacity: 1,
       pixelValuesToColorFn: values => {
+        // ✅ Abort rendering if a newer raster started loading
+        if (thisLoadId !== currentLoadId) return null;
+
         const val = values && values[0];
         if (val === undefined || val === null || isNaN(val)) return null;
         return interpolateColor(val);
-      }
-    }).addTo(map);
+      },
+    });
 
-    map.fitBounds(currentLayer.getBounds());
-    map.invalidateSize(true);
-
+    // Only add if still valid
+    if (loadId === currentLoadId) {
+      currentLayer.addTo(map);
+      map.fitBounds(currentLayer.getBounds());
+      map.invalidateSize(true);
+    }
   } catch (err) {
     console.error('❌ Error loading GeoTIFF:', err);
     alert('Failed to load GeoTIFF: ' + url);
   }
 }
 
+
+// -----
 function removeOldGeoRasterLayers() {
   if (!map) return;
 
@@ -175,7 +187,15 @@ function initializeMap() {
   legend.addTo(map);
 }
 // Attach UI handlers (assumes your HTML has elements with these IDs)
-document.getElementById('loadBtn').addEventListener('click', () => {
+let isLoading = false;
+
+document.getElementById('loadBtn').addEventListener('click', async () => {
+  if (isLoading) {
+    console.log('⏳ Please wait: previous raster still loading...');
+    return;
+  }
+  isLoading = true;
+
   initializeMap();
 
   const crop = cropSelect.value.toLowerCase();
@@ -191,9 +211,11 @@ document.getElementById('loadBtn').addEventListener('click', () => {
   }
 
   currentLoadId++;
-  loadGeoTIFFGuarded(tifPath, currentLoadId);
+  await loadGeoTIFFGuarded(tifPath, currentLoadId);
+  isLoading = false;
 });
 
+//------
 document.getElementById('cleanBtn').addEventListener('click', () => {
   if (!map) return;
   removeOldGeoRasterLayers();
@@ -210,3 +232,12 @@ console.log('pane children counts:');
   if (p) Array.from(p.children).forEach((c,i)=> console.log('  ', name, i, c.tagName, c.className));
 });
 console.log('#map canvases:', document.querySelectorAll('#map canvas').length);
+
+
+const observer = new MutationObserver(() => {
+  document.querySelectorAll('#map canvas').forEach(c => {
+    const pane = c.closest('.leaflet-tile-pane, .leaflet-overlay-pane');
+    if (!pane || !pane.closest('#map')) c.remove();
+  });
+});
+observer.observe(document.getElementById('map'), { childList: true, subtree: true });
