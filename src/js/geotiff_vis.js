@@ -63,59 +63,42 @@ async function loadGeoTIFFGuarded(url, loadId) {
 function removeOldGeoRasterLayers() {
   if (!map) return;
 
-  console.log('🧹 Forcibly removing old GeoRasterLayer canvases...');
+  console.log('🧹 Removing GeoRasterLayers the safe way...');
 
-  // 1️⃣ Remove tracked current layer if exists
+  // 1️⃣ Remove tracked layer if exists
   if (currentLayer) {
-    try {
-      // destroy its internal tile container before removing
-      if (currentLayer._level && currentLayer._level.el) {
-        currentLayer._level.el.remove();
-      }
-      if (currentLayer._container) {
-        currentLayer._container.remove();
-      }
-      if (currentLayer._tileContainer) {
-        currentLayer._tileContainer.remove();
-      }
-
-      map.removeLayer(currentLayer);
-    } catch (e) {
-      console.warn('Error removing currentLayer:', e);
-    }
+    map.removeLayer(currentLayer);
     currentLayer = null;
   }
 
-  // 2️⃣ Also check for any georaster-like layers left in map._layers
-  Object.values(map._layers).forEach(layer => {
-    try {
-      if (layer && (layer._georaster || (layer.options && layer.options.pane === 'georasterPane'))) {
-        if (layer._container) layer._container.remove();
-        if (layer._tileContainer) layer._tileContainer.remove();
-        map.removeLayer(layer);
-      }
-    } catch (e) {}
+  // 2️⃣ Remove any leftover raster layers
+  map.eachLayer(layer => {
+    if (layer._georaster || (layer.options && layer.options.pane === 'georasterPane')) {
+      try { map.removeLayer(layer); } catch (e) {}
+    }
   });
 
-  // 3️⃣ Remove all leftover canvases in the map container
-  document.querySelectorAll('#map canvas').forEach(c => {
-    try { c.remove(); } catch (e) {}
+  // 3️⃣ Remove leftover canvases
+  const mapEl = document.getElementById('map');
+  Array.from(mapEl.querySelectorAll('canvas')).forEach(c => {
+    if (c.closest('.leaflet-tile-pane') || c.closest('.leaflet-overlay-pane')) {
+      c.remove();
+    }
   });
 
-  // 4️⃣ Remove and recreate the georasterPane itself
+  // 4️⃣ Recreate pane to force a clean redraw
   const oldPane = map.getPane('georasterPane');
   if (oldPane && oldPane.parentNode) oldPane.parentNode.removeChild(oldPane);
-
   const newPane = map.createPane('georasterPane');
   newPane.style.zIndex = 450;
   newPane.style.pointerEvents = 'none';
 
-  currentRaster = null;
+  // 5️⃣ Force Leaflet to recompute layout
   map.invalidateSize(true);
 
-  console.log('✅ All raster canvases removed and pane recreated.');
+  currentRaster = null;
+  console.log('✅ GeoRaster layers fully cleared.');
 }
-
 
 // --- Function to initialize map (run only once) ---
 function initializeMap() {
