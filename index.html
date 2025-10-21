@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CropSuiteLite Map Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 100vh; width: 80%; margin: 0; padding: 0; }
+        .menu { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            z-index: 1000; 
+            background: white; 
+            padding: 8px; 
+            border-radius: 6px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.2);
+        }
+        /* Sidebar style */
+        .sidebar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 18%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: -2px 0 6px rgba(0,0,0,0.2);
+        padding: 16px;
+        font-family: sans-serif;
+        z-index: 1000;
+        overflow-y: auto;
+        }
+
+        .sidebar h3 {
+        margin-top: 0;
+        font-size: 16px;
+        color: #2c3e50;
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 6px;
+        }
+
+        .sidebar label {
+        display: block;
+        margin-top: 12px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #444;
+        }
+
+        .sidebar select {
+        width: 100%;
+        padding: 6px;
+        margin-top: 4px;
+        border-radius: 6px;
+        border: 1px solid #aaa;
+        }
+
+        .sidebar button {
+        width: 100%;
+        margin-top: 16px;
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+        }
+
+        .sidebar button:hover {
+        background-color: #43a047;
+        }
+
+        /* Legend container style */
+        .info.legend {
+        background: white;
+        padding: 8px;
+        border-radius: 6px;
+        box-shadow: 0 0 4px rgba(0,0,0,0.3);
+        font-size: 12px;
+        line-height: 16px;
+        }
+        
+    </style>
+</head>
+<body>
+  <button id="cleanBtn" type="button">Clean everything</button>
+  
+    <div id="map"></div>
+    <!-- <div class="menu">
+        <label for="layerSelect">Select Layer:</label>
+        <select id="layerSelect">
+            <option value="results/cog/ssp245_2021_2040_maize_suitability.tif">Maize Suitability (SSP245)</option>
+            <option value="results/cog/ssp585_2041_2060_rice_suitability.tif">Rice Suitability (SSP585)</option>
+        </select>
+    </div> -->
+    <div class="sidebar">
+    <h3>CropSuiteLite Layers</h3>
+
+    <label for="cropSelect">Crop</label>
+    <select id="cropSelect">
+      <option value="millet">Millet</option>
+      <option value="wheat">Wheat</option>
+    </select>
+
+    <label for="sspSelect">SSP Scenario</label>
+    <select id="sspSelect">
+      <option value="ssp126">SSP126</option>
+      <option value="ssp245">SSP245</option>
+    </select>
+
+    <label for="periodSelect">Period</label>
+    <select id="periodSelect">
+      <option value="2021_2040">2021–2040</option>
+      <option value="2041_2060">2041–2060</option>
+      <option value="2061_2080">2061–2080</option>
+    </select>
+
+    <button id="loadBtn">Load Layer</button>
+  </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- only one copy of georaster & georaster-layer -->
+    <script src="https://unpkg.com/georaster/dist/georaster.browser.min.js"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+
+    <script src="src/js/geotiff_vis.js"></script>
+    
+</body>
+</html>
