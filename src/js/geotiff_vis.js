@@ -198,7 +198,7 @@ document.getElementById('loadBtn').addEventListener('click', () => {
   const crop = cropSelect.value.toLowerCase();
   const ssp = sspSelect.value.toLowerCase();
   const period = periodSelect.value.toLowerCase();
-  const tifPath = `results/cog/${ssp}_${period.replace('-', '_')}_${crop}_suitability.tif`;
+  const tifPath = `src/cog/${ssp}_${period.replace('-', '_')}_${crop}_suitability.tif`;
 
   console.log('🗺️ Loading:', tifPath);
 
