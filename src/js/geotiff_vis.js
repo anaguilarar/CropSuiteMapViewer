@@ -1,158 +1,8 @@
+  let map;
+  let currentLayer = null;
+  let legend = null; // ✅ define legend globally
 
-let baseLayer, legend;
-let currentRaster = null;
-let currentLayer = null;
-let activeMarker = null;
-let map;
-
-
-$(function () {
-  initializeMap();
-});
-
-function debugPanesAndCanvases(tag = '') {
-  try {
-    console.log('--- DEBUG PANE / CANVAS STATE', tag);
-    console.log('window.map._layers count:', Object.keys(window.map._layers).length);
-    Object.values(window.map._layers).forEach((l, i) => {
-      try {
-        console.log(i, l && l.constructor && l.constructor.name, 'pane:', l && l.options && l.options.pane, 'hasGeoraster:', !!(l && l._georaster));
-      } catch (e) { }
-    });
-    ['mapPane', 'tilePane', 'overlayPane', 'shadowPane', 'georasterPane'].forEach(name => {
-      const p = window.map.getPane(name);
-      console.log('pane', name, 'exists?', !!p, 'children:', p ? p.children.length : 'n/a');
-      if (p) Array.from(p.children).forEach((c, i) => console.log('   ', name, i, c.tagName, c.className));
-    });
-    console.log('#map canvases', document.querySelectorAll('#map canvas').length);
-  } catch (e) {
-    console.warn('debugPanesAndCanvases error', e);
-  }
-}
-
-// --- Load and render GeoTIFF ---
-
-function loadGeoTIFFGuarded(url) {
-  try {
-    // 🧹 Eliminar capa anterior del mapa (si existe)
-    if (currentLayer && window.map.hasLayer(currentLayer)) {
-      window.map.removeLayer(currentLayer);
-      console.log("🧹 Capa anterior eliminada del mapa");
-    }
-    currentLayer = null;
-    currentRaster = null;
-
-    // 🚫 Evitar caché del navegador
-    const noCacheUrl = url;
-
-    fetch(noCacheUrl, { cache: "no-store" })
-      .then(resp => {
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        return resp.arrayBuffer();
-      })
-      .then(arrayBuffer => {
-        console.log("🌍 Cargando GeoTIFF:", noCacheUrl);
-        return parseGeoraster(arrayBuffer);
-      })
-      .then(georaster => {
-        currentRaster = georaster;
-
-        // 🧩 Crear nueva capa raster
-        currentLayer = new GeoRasterLayer({
-          georaster,
-          opacity: 1,
-          // pixelValuesToColorFn: values => {
-          //   const val = values && values[0];
-          //   if (val === undefined || val === null || isNaN(val)) return null;
-          //   return interpolateColor(val);
-          // },
-        });
-
-        // ✅ Agregar nueva capa al mapa
-        currentLayer.addTo(window.map);
-        window.map.fitBounds(currentLayer.getBounds());
-        window.map.invalidateSize(true);
-        console.log("✅ Nueva capa agregada al mapa:", url);
-      })
-      .catch(err => {
-        console.error("❌ Error loading GeoTIFF:", err);
-        alert("Failed to load GeoTIFF: " + url);
-      });
-
-  } catch (err) {
-    console.error("❌ Unexpected error:", err);
-  }
-}
-
-// -----
-function removeOldGeoRasterLayers() {
-  if (!window.map) return;
-
-  console.log('🧹 Removing GeoRasterLayers the safe way...');
-
-  // 1️⃣ Remove tracked layer if exists
-  if (currentLayer) {
-    window.map.removeLayer(currentLayer);
-    currentLayer = null;
-  }
-
-  // 2️⃣ Remove any leftover raster layers
-  window.map.eachLayer(layer => {
-    if (layer._georaster || (layer.options && layer.options.pane === 'georasterPane')) {
-      try { window.map.removeLayer(layer); } catch (e) { }
-    }
-  });
-
-  // 3️⃣ Remove leftover canvases
-  const mapEl = document.getElementById('map');
-  Array.from(mapEl.querySelectorAll('canvas')).forEach(c => {
-    if (c.closest('.leaflet-tile-pane') || c.closest('.leaflet-overlay-pane')) {
-      c.remove();
-    }
-  });
-
-  // 4️⃣ Recreate pane to force a clean redraw
-  const oldPane = window.map.getPane('georasterPane');
-  if (oldPane && oldPane.parentNode) oldPane.parentNode.removeChild(oldPane);
-  const newPane = window.map.createPane('georasterPane');
-  newPane.style.zIndex = 450;
-  newPane.style.pointerEvents = 'none';
-
-  // 5️⃣ Force Leaflet to recompute layout
-  window.map.invalidateSize(true);
-
-  currentRaster = null;
-  console.log('✅ GeoRaster layers fully cleared.');
-}
-
-// --- Function to initialize map (run only once) ---
-function initializeMap() {
-  console.log("🗺️ initializeMap...");
-
-  // --- Asegurar que 'map' sea global ---
-  if (window.map && window.map._layers) {
-    try {
-      console.log("🧹 Eliminando mapa existente...");
-      window.map.off();     // quita todos los listeners
-      window.map.remove();  // elimina el mapa del DOM
-    } catch (err) {
-      console.warn("⚠️ Error al eliminar el mapa anterior:", err);
-    }
-  }
-
-  // 🔄 Recrear el contenedor del mapa
-  document.getElementById("mapxxx").innerHTML = "<div id='map'></div>";
-
-  // --- Crear nuevo mapa ---
-  window.map = L.map('map').setView([0, 20], 4);
-
-
-  window.baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(window.map);
-
-  // --- Color map ---
+  // 🌈 Color map definition
   const colorMap = [
     { value: 0, color: [215, 212, 213] },
     { value: 20, color: [245, 144, 83] },
@@ -162,8 +12,8 @@ function initializeMap() {
     { value: 100, color: [26, 150, 65] }
   ];
 
-  // --- Interpolate colors ---
-  window.interpolateColor = function (val) {
+  // --- Interpolate color ---
+  function interpolateColor(val) {
     val = Math.max(0, Math.min(100, val));
     for (let i = 0; i < colorMap.length - 1; i++) {
       const low = colorMap[i];
@@ -178,59 +28,149 @@ function initializeMap() {
       }
     }
     return `rgba(${colorMap[colorMap.length - 1].color.join(",")},1)`;
-  };
+  }
 
-  // --- Helper to get pixel value ---
-  // window.getPixelValueAtLatLng = function (lat, lon) {
-  //   if (!window.currentRaster) return null;
-  //   const { xmin, ymax, pixelWidth, pixelHeight, width, height, values } = currentRaster;
-  //   const x = Math.floor((lon - xmin) / pixelWidth);
-  //   const y = Math.floor((ymax - lat) / Math.abs(pixelHeight));
-  //   if (x < 0 || x >= width || y < 0 || y >= height) return null;
-  //   const val = values[0][y][x];
-  //   if (val === undefined || val === null || isNaN(val)) return null;
-  //   return val;
-  // };
+  async function checkFileExists(url) {
+    try {
+      const resp = await fetch(url, { method: "HEAD" });
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  }
 
-  // --- Legend ---
-  window.legend = L.control({ position: 'bottomright' });
-  // legend.onAdd = function () {
-  //   const div = L.DomUtil.create('div', 'info legend');
-  //   const gradient = colorMap.map(c => `rgb(${c.color.join(',')}) ${c.value}%`).join(', ');
-  //   div.innerHTML = `
-  //     <div><b>Suitability (%)</b></div>
-  //     <div style="width:150px;height:15px;margin:4px 0;
-  //     background:linear-gradient(to right,${gradient});border:1px solid #aaa;"></div>
-  //     <div style="display:flex;justify-content:space-between;">
-  //       <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
-  //     </div>`;
-  //   div.style.background = 'white';
-  //   div.style.padding = '8px';
-  //   div.style.borderRadius = '6px';
-  //   div.style.boxShadow = '0 0 6px rgba(0,0,0,0.3)';
-  //   div.style.fontSize = '12px';
-  //   return div;
-  // };
-  // legend.addTo(window.map);
-}
+  // 🖼️ Colorize grayscale PNG and hide -1 (value 0)
+  async function colorizePNG(url) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = url;
+    await img.decode();
 
-// Attach UI handlers (assumes your HTML has elements with these IDs)
-let isLoading = false;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
 
-document.getElementById('loadBtn').addEventListener('click', function () {
+    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+    const data = imageData.data;
 
-  initializeMap();
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = data[i]; // grayscale 0–255
 
-  // 🔤 Construir ruta GeoTIFF con parámetro anti-caché
-  const crop = cropSelect.value.toLowerCase();
-  const ssp = sspSelect.value.toLowerCase();
-  const period = periodSelect.value.toLowerCase();
-  const tifPath = `src/cog/${ssp}_${period.replace('-', '_')}_${crop}_suitability.tif?nocache=${Date.now()}`;
+      // Treat "no data" (0) as transparent
+      if (gray === 0) {
+        data[i + 3] = 0;
+        continue;
+      }
 
-  console.log('🗺️ Loading:', tifPath);
+      const val = (gray / 255) * 100;
+      const color = interpolateColor(val);
+      const rgba = color.match(/\d+(\.\d+)?/g).map(Number);
 
-  // 🧹 Limpiar capa anterior y cargar la nueva
-  loadGeoTIFFGuarded(tifPath);
-});
+      data[i] = rgba[0];
+      data[i + 1] = rgba[1];
+      data[i + 2] = rgba[2];
+      data[i + 3] = Math.round((rgba[3] || 1) * 255);
+    }
 
+    ctx.putImageData(imageData, 0, 0);
+    return canvas.toDataURL();
+  }
 
+  async function loadColorizedOverlay(url) {
+    if (!await checkFileExists(url)) {
+      alert("File not found: " + url);
+      return;
+    }
+
+    if (currentLayer) {
+      map.removeLayer(currentLayer);
+      currentLayer = null;
+    }
+
+    const bounds = [
+      [-35.2, -24.979166], // SW
+      [37.6, 51.9791667]   // NE
+    ];
+    const colorizedUrl = await colorizePNG(url);
+    currentLayer = L.imageOverlay(colorizedUrl, bounds, { opacity: 1 }).addTo(map);
+    console.log("🖼️ Colorized PNG loaded:", url);
+  }
+
+  function initializeMap() {
+    if (map) return;
+    map = L.map("map").setView([10, 0], 3);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+  }
+
+  function getSelectedValue(name) {
+    const selected = document.querySelector(`input[name="${name}"]:checked`);
+    return selected ? selected.value : null;
+  }
+
+  async function updateLayer() {
+    initializeMap();
+    const crop = getSelectedValue("crop");
+    const ssp = getSelectedValue("ssp");
+    const period = getSelectedValue("period");
+    const solution = getSelectedValue("solution");
+    const path = `src/cog/${ssp}_${period}_${crop}_${solution}_suitability.png`;
+    await loadColorizedOverlay(path);
+    addLegend(); // ✅ legend now works
+  }
+
+  // Event listeners
+  ["crop", "ssp", "period", "solution"].forEach(name => {
+    document.querySelectorAll(`input[name="${name}"]`).forEach(el => {
+      el.addEventListener("change", updateLayer);
+    });
+  });
+
+  document.getElementById("cleanBtn").addEventListener("click", () => {
+    if (currentLayer) {
+      map.removeLayer(currentLayer);
+      currentLayer = null;
+    }
+    if (legend) {
+      map.removeControl(legend);
+      legend = null;
+    }
+    console.log("🧹 Map cleared.");
+  });
+
+  // ✅ Static legend
+  function addLegend() {
+    if (legend) map.removeControl(legend);
+
+    legend = L.control({ position: "bottomright" });
+
+    legend.onAdd = function () {
+      const div = L.DomUtil.create("div", "info legend");
+      const levels = [
+        { range: "0 - 20", color: "rgb(215,212,213)", label: "" },
+        { range: "20 - 40", color: "rgb(245,144,83)", label: "" },
+        { range: "40 - 60", color: "rgb(254,223,154)", label: "" },
+        { range: "60 - 80", color: "rgb(219,240,158)", label: "" },
+        { range: "80 - 100", color: "rgb(26,150,65)", label: "" }
+      ];
+
+      div.innerHTML = "<h4>Suitability</h4>";
+      levels.forEach(l => {
+        div.innerHTML += `
+          <div style="display:flex;align-items:center;margin-bottom:3px;">
+            <i style="background:${l.color};width:18px;height:18px;margin-right:8px;border-radius:3px;opacity:0.9;"></i>
+            ${l.range} 
+          </div>`;
+      });
+      return div;
+    };
+
+    legend.addTo(map);
+  }
+
+  // 🧭 Auto-load initial layer
+  updateLayer();
