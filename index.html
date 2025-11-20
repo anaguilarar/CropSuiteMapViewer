@@ -15,9 +15,15 @@
       display: flex;
     }
 
-    #map {
-      height: 100vh;
+    .maps-container {
       width: 80%;
+      display: flex;
+      flex-direction: column; /* vertical stacking */
+    }
+
+    .map {
+      flex: 1; /* equal height for all maps */
+      width: 100%;
     }
 
     .sidebar {
@@ -82,40 +88,85 @@
 </head>
 
 <body>
-  <div id="map"></div>
+  <div class="maps-container">
+    <div id="map1" class="map"></div>
+    <div id="map2" class="map"></div>
+    <div id="map3" class="map"></div>
+  </div>
 
   <div class="sidebar">
     <h3>CropSuite</h3>
 
-    <fieldset id="cropSet">
+    <!-- <fieldset id="cropSet">
       <legend>Crop</legend>
       <label><input type="radio" name="crop" value="millet" checked> Millet</label>
       <label><input type="radio" name="crop" value="wheat"> Wheat</label>
-    </fieldset>
+    </fieldset> -->
+
+    <fieldset id="cropSet">
+    <legend>Crop</legend>
+
+    <select id="cropSelect" name="crop" style="width:100%; padding:6px; border-radius:6px;">
+      <option value="banana" >banana</option>
+      <option value="barley" >barley</option>
+      <option value="beans" selected >beans</option>
+      <option value="cassava" >cassava</option>
+      <option value="chickpea" >chickpea</option>
+      <option value="cocoa" >cocoa</option>
+      <option value="coconut" >coconut</option>
+      <option value="coffeearabica" >coffeearabica</option>
+      <option value="coffeerobusta" >coffeerobusta</option>
+      <option value="groundnut" >groundnut</option>
+      <option value="cotton" >cotton</option>
+      <option value="maize">maize</option>
+      <option value="millet" >millet</option>
+      <option value="onion" >onion</option>
+      <option value="potato" >potato</option>
+      <option value="rice">rice</option>
+      <option value="rubber">rubber</option>
+      <option value="sesame">sesame</option>
+      <option value="sorghum">sorghum</option>
+      <option value="sugarcane">sugarcane</option>
+      <option value="sunflower">sunflower</option>
+      <option value="tea">tea</option>
+      <option value="tobacco">tobacco</option>
+      <option value="tomato">tomato</option>
+      <option value="wheat">Wheat</option>
+      
+    </select>
+
+  </fieldset>
 
     <fieldset id="sspSet">
       <legend>SSP Scenario</legend>
       <label><input type="radio" name="ssp" value="ssp126" checked> SSP126</label>
       <label><input type="radio" name="ssp" value="ssp245"> SSP245</label>
+      <label><input type="radio" name="ssp" value="ssp370"> SSP370</label>
+    </fieldset>
+
+    <fieldset id="modelSet">
+      <legend>SSP Scenario</legend>
+      <label><input type="radio" name="model" value="access_esm1_5" checked> access-esm1-5</label>
+      <label><input type="radio" name="model" value="ec_earth3"> ec-earth3</label>
+      <label><input type="radio" name="model" value="inm_cm5_0"> inm-cm5-0</label>
+
     </fieldset>
 
     <fieldset id="periodSet">
       <legend>Period</legend>
       <label><input type="radio" name="period" value="2021_2040" checked> 2021–2040</label>
+      <label><input type="radio" name="period" value="2041_2060" > 2041–2060</label>
+      <label><input type="radio" name="period" value="2061_2080" > 2061–2080</label>
     </fieldset>
 
     <fieldset id="solutionSet">
       <legend>Solution</legend>
       <label><input type="radio" name="solution" value="s2"> Heat Tolerance</label>
-      <label><input type="radio" name="solution" value="s1"> Drought Tolerance</label>
-      <label><input type="radio" name="solution" value="s0" checked> None</label>
-      <button id="diffBtn">Get difference Map</button>
+      <label><input type="radio" name="solution" value="s1" checked> Drought Tolerance</label>
+    
     </fieldset>
 
-    
 
-    <button id="cleanBtn">Clean Map</button>
-    
   </div>
 
   <!-- Dependencies -->
