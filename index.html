@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CropSuiteLite Map Viewer (Colorized PNG, No -1 Values)</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      display: flex;
+    }
+
+    #map {
+      height: 100vh;
+      width: 80%;
+    }
+
+    .sidebar {
+      width: 20%;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.2);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      margin-top: 0;
+      color: #2c3e50;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+    }
+
+    fieldset {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 14px;
+    }
+
+    legend {
+      font-weight: bold;
+      color: #444;
+      padding: 0 6px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    input[type="radio"] {
+      margin-right: 6px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background-color: #2d9750;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #c62828;
+    }
+
+
+
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <div class="sidebar">
+    <h3>CropSuite</h3>
+
+    <fieldset id="cropSet">
+      <legend>Crop</legend>
+      <label><input type="radio" name="crop" value="millet" checked> Millet</label>
+      <label><input type="radio" name="crop" value="wheat"> Wheat</label>
+    </fieldset>
+
+    <fieldset id="sspSet">
+      <legend>SSP Scenario</legend>
+      <label><input type="radio" name="ssp" value="ssp126" checked> SSP126</label>
+      <label><input type="radio" name="ssp" value="ssp245"> SSP245</label>
+    </fieldset>
+
+    <fieldset id="periodSet">
+      <legend>Period</legend>
+      <label><input type="radio" name="period" value="2021_2040" checked> 2021–2040</label>
+    </fieldset>
+
+    <fieldset id="solutionSet">
+      <legend>Solution</legend>
+      <label><input type="radio" name="solution" value="s2"> Heat Tolerance</label>
+      <label><input type="radio" name="solution" value="s1"> Drought Tolerance</label>
+      <label><input type="radio" name="solution" value="s0" checked> None</label>
+      <button id="diffBtn">Get difference Map</button>
+    </fieldset>
+
+    
+
+    <button id="cleanBtn">Clean Map</button>
+    
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="src/js/geotiff_vis.js"></script>
+</body>
+</html>
