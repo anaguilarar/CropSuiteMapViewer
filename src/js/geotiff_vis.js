@@ -21,13 +21,16 @@ const SuitcolorMap = [
 ];
 
 const DiffcolorMap = [
-  { value: 0, color: [165, 0, 38] },    // dark red (large negative change)
-  { value: 20, color: [215, 48, 39] },  // red
-  { value: 40, color: [244, 109, 67] }, // orange
-  { value: 50, color: [255, 255, 255] }, // white (no change)
-  { value: 60, color: [116, 173, 209] }, // light blue
-  { value: 80, color: [69, 117, 180] },  // medium blue
-  { value: 100, color: [49, 54, 149] }   // dark blue (large positive change)
+  //rgb(255,255,255)
+  { value: 0,  color: [255, 255, 255] },   // pure white
+  { value: 1,  color: [235, 240, 255] },   // very pale blue
+  { value: 10, color: [180, 205, 255] },   // soft light blue
+  { value: 20, color: [120, 165, 235] },   // light–medium blue
+  { value: 30, color: [80, 120, 210] },    // deeper blue
+  { value: 40, color: [60, 85, 170] },     // strong blue-indigo
+  { value: 50, color: [55, 50, 150] },     // indigo
+  { value: 60, color: [95, 30, 140] }      // purple (smooth transition)
+
 ];
 // --- Interpolate color ---
 function interpolateColor(val, is_diff) {
@@ -50,6 +53,7 @@ function interpolateColor(val, is_diff) {
   }
   else{
     colorMap = DiffcolorMap
+
     val = Math.max(0, Math.min(100, val));
     for (let i = 0; i < colorMap.length - 1; i++) {
       const low = colorMap[i];
@@ -59,8 +63,10 @@ function interpolateColor(val, is_diff) {
         const r = Math.round(low.color[0] + t * (high.color[0] - low.color[0]));
         const g = Math.round(low.color[1] + t * (high.color[1] - low.color[1]));
         const b = Math.round(low.color[2] + t * (high.color[2] - low.color[2]));
-        //const alpha = val < 20 ? 0.02 * val : 1;
-        return `rgba(${r},${g},${b},1)`;
+        //const alpha = val < 1 ? 0.02 * val : 1;
+        alpha = 1;
+        return `rgba(${r},${g},${b})`;
+
       }
     }
 
@@ -234,9 +240,15 @@ async function updateLayer() {
 
   const crop = getDropDownSelectedValue("crop");
   const ssp = getSelectedValue("ssp");
-  const period = getSelectedValue("period");
+  
   const solution = getSelectedValue("solution");
   const model = getSelectedValue("model");
+  if (ssp == 'historical'){ 
+    var period = '1995_2014';
+  }
+  else{
+    var period = getSelectedValue("period");
+  }
 
   const path1 = `src/africa_summary_png/ST0_${model}_${ssp}_${period}_${crop}_bl_suit.png`;
   const path2 = `src/africa_summary_png/ST1_${model}_${ssp}_${period}_${crop}_${solution}_suit.png`;
@@ -281,13 +293,16 @@ function buildLegendHTML(isSuit) {
     });
   } 
   else {
-    html += `<h4>% Difference</h4>`;
+    html += `<h4>Absolute difference</h4>`;
     [
-      { range: "0–20", color: "rgb(165,0,38)" },
-      { range: "20–40", color: "rgb(215,48,39)" },
-      { range: "40–60", color: "rgb(255,255,255)", border: "1px solid #999" },
-      { range: "60–80", color: "rgb(69,117,180)" },
-      { range: "80–100", color: "rgb(49,54,149)" }
+  { range: "0 – 1",   color: "rgb(255,255,255)" },   // white
+  { range: "1 – 10",  color: "rgb(235,240,255)" },   // very pale blue
+  { range: "10 – 20", color: "rgb(180,205,255)" },   // light blue
+  { range: "20 – 30", color: "rgb(120,165,235)" },   // blue
+  { range: "30 – 40", color: "rgb(80,120,210)" },    // deeper blue
+  { range: "40 – 50", color: "rgb(60,85,170)" },     // blue–indigo
+  { range: "50 – 60", color: "rgb(55,50,150)" },     // indigo
+  { range: "60+",     color: "rgb(95,30,140)" }      // purple
     ].forEach(l => {
       html += `
         <div style="display:flex;align-items:center;margin-bottom:3px;">
