@@ -200,6 +200,21 @@ function initializeMap1() {
     maxZoom: 18,
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
+
+  addMapTitle(map, "Suitability map");
+}
+
+
+function addMapTitle(map, text) {
+  const title = L.control({ position: "topleft" });
+
+  title.onAdd = function () {
+    const div = L.DomUtil.create("div", "map-title");
+    div.innerHTML = `<h4>${text}</h4>`;
+    return div;
+  };
+
+  title.addTo(map);
 }
 
 function initializeMap2() {
@@ -209,6 +224,8 @@ function initializeMap2() {
     maxZoom: 18,
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map2);
+
+  addMapTitle(map2, "Solution adaptation map");
 }
 
 function initializeMap3() {
@@ -218,6 +235,8 @@ function initializeMap3() {
     maxZoom: 18,
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map3);
+
+  addMapTitle(map3, "Difference map");
 }
 
 function getSelectedValue(name) {
