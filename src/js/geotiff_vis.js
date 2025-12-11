@@ -250,10 +250,10 @@ async function updateLayer() {
     var period = getSelectedValue("period");
   }
 
-  const path1 = `africa_summary_png/ST0_${model}_${ssp}_${period}_${crop}_bl_suit.png`;
-  const path2 = `africa_summary_png/ST1_${model}_${ssp}_${period}_${crop}_${solution}_suit.png`;
+  const path1 = `src/africa_summary_png/ST0_${model}_${ssp}_${period}_${crop}_bl_suit.png`;
+  const path2 = `src/africa_summary_png/ST1_${model}_${ssp}_${period}_${crop}_${solution}_suit.png`;
   
-  const path3 = `africa_summary_png/${model}_${ssp}_${period}_${crop}_${solution}bl_diff.png`;
+  const path3 = `src/africa_summary_png/${model}_${ssp}_${period}_${crop}_${solution}bl_diff.png`;
   //const path3 = `src/cog/ssp126_2021_2040_wheat_s1s0_suitability.png`;
 
   if (legend) { map.removeControl(legend); legend = null; }
@@ -295,8 +295,7 @@ function buildLegendHTML(isSuit) {
   else {
     html += `<h4>Absolute difference</h4>`;
     [
-  { range: "0 – 1",   color: "rgb(255,255,255)" },   // white
-  { range: "1 – 10",  color: "rgb(235,240,255)" },   // very pale blue
+  { range: "0 – 10",   color: "rgb(255,255,255)" },   // white
   { range: "10 – 20", color: "rgb(180,205,255)" },   // light blue
   { range: "20 – 30", color: "rgb(120,165,235)" },   // blue
   { range: "30 – 40", color: "rgb(80,120,210)" },    // deeper blue
