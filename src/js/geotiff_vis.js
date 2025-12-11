@@ -250,10 +250,10 @@ async function updateLayer() {
     var period = getSelectedValue("period");
   }
 
-  const path1 = `src/africa_summary_png/ST0_${model}_${ssp}_${period}_${crop}_bl_suit.png`;
-  const path2 = `src/africa_summary_png/ST1_${model}_${ssp}_${period}_${crop}_${solution}_suit.png`;
+  const path1 = `africa_summary_png/ST0_${model}_${ssp}_${period}_${crop}_bl_suit.png`;
+  const path2 = `africa_summary_png/ST1_${model}_${ssp}_${period}_${crop}_${solution}_suit.png`;
   
-  const path3 = `src/africa_summary_png/${model}_${ssp}_${period}_${crop}_${solution}bl_diff.png`;
+  const path3 = `africa_summary_png/${model}_${ssp}_${period}_${crop}_${solution}bl_diff.png`;
   //const path3 = `src/cog/ssp126_2021_2040_wheat_s1s0_suitability.png`;
 
   if (legend) { map.removeControl(legend); legend = null; }
